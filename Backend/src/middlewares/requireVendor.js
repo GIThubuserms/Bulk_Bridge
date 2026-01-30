@@ -1,14 +1,9 @@
-import ApiError from "../utils/ApiError";
-import { asynchandler } from "../utils/AsyncHandler";
+import ApiError from "../utils/ApiError.js";
+import { asynchandler } from "../utils/AsyncHandler.js";
 
-
-
-export const requireVendor=asynchandler(async(req,res,next)=>{
-
-    const cookieData=req.cookies?.accessToken || req.header('Authentication')?.replace("Bearer ","")
-
-    if(cookieData.role=="purchaser"){
-        return new ApiError(400,"UnAuthorized Access !!")
-    }
-    next();
-})
+export const requireVendor = asynchandler(async (req, res, next) => {
+  if (req.user.role != "vendor") {
+    throw new ApiError(400, "UnAuthorized Access !!");
+  }
+  next();
+});

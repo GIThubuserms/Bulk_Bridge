@@ -1,4 +1,4 @@
-import { asynchandler } from "../utils/AsyncHandler";
+import { asynchandler } from "../utils/AsyncHandler.js";
 import jwt from "jsonwebtoken";
 
 export const verifyUser = asynchandler(async (req, res, next) => {
@@ -11,7 +11,7 @@ export const verifyUser = asynchandler(async (req, res, next) => {
     throw new ApiError(401, "UnAuthorized User !!");
   }
 
-  const decodedToken = jwt.verify(token, process.env.accessToken);
+  const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN);
 
   if (!decodedToken) {
     throw new ApiError(402, "User is Not Authorized !!");
@@ -20,6 +20,8 @@ export const verifyUser = asynchandler(async (req, res, next) => {
   const verifiedUser = await User.findById(decodedtoken?._id).select(
     "-password -refreshToken",
   );
+  
+  if (!verifiedUser) throw new ApiError(401, "User not found");
 
   req.user = verifiedUser;
 
