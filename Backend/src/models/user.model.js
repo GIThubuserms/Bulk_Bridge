@@ -31,10 +31,9 @@ const Userschema = new Schema({
 // We ensure that password is save hashed form
 Userschema.pre("save", async function (next) {
   if (!this.isModified("password")) {
-    return next();
+    return;
   }
   this.password = await bcrypt.hash(this.password, 10);
-  next();
 });
 
 // We ensure that password is correct OR not
@@ -51,11 +50,11 @@ Userschema.methods.genaccessToken = function () {
     {
       username: this.username,
       role: this.role,
-      id: this._id,
+      _id: this._id,
     },
     process.env.ACCESS_TOKEN,
     {
-      expiresIn: '10m',
+      expiresIn: "10m",
     },
   );
 };
@@ -63,7 +62,7 @@ Userschema.methods.genaccessToken = function () {
 Userschema.methods.genrefreshToken = function () {
   return jwt.sign(
     {
-      id: this._id,
+      _id: this._id,
     },
     process.env.REFRESH_TOKEN,
     {

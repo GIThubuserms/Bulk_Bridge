@@ -23,12 +23,8 @@ export const RegisterUser = asynchandler(async (req, res) => {
 
   console.log("Testing 123");
 
-  const newUser = await User.create({
-    username,
-    email,
-    password,
-    role,
-  });
+  const newUser = await User.create(req.body);
+  console.log("Testing 123");
 
   if (!newUser) throw new ApiError(500, "User Not Formed");
 
@@ -55,13 +51,16 @@ export const Login = asynchandler(async (req, res) => {
 
   if (!user) throw new ApiError(400, "User Does not Exits !!");
 
-  const IspasswordCorrect = await user.IspasswordCorrect(password);
+  const IspassCorrect = await user.IsPasswordCorrect(password);
 
-  if (!IspasswordCorrect) throw new ApiError(402, "Password Is Not Correct !!");
+  if (!IspassCorrect) throw new ApiError(402, "Password Is Not Correct !!");
 
-  const { AccessToken, RefreshToken } = await generateAccessandRefreshTokens(
+  const { accessToken, refreshToken } = await generateAccessandRefreshTokens(
     user._id,
   );
+
+  console.log("AccessToken : ", accessToken);
+  console.log("RefreshToken : ", refreshToken);
 
   const options = {
     httpOnly: true,
@@ -69,8 +68,8 @@ export const Login = asynchandler(async (req, res) => {
   };
 
   res
-    .cookie("accessToken", AccessToken, options)
-    .cookie("refreshToken", RefreshToken, options)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
     .json(new ApiResponse(user, "User Login Successfully", 200));
 });
 

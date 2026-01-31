@@ -14,7 +14,7 @@ app.use(express.json({limit:'16kb'}))
 
 import { UserRouter } from "./routes/user.route.js";
 
-app.get("/api/v1/users",UserRouter)
+app.use("/api/v1/users",UserRouter)
 
 
 export default app
