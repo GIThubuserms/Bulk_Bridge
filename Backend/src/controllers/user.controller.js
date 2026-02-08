@@ -97,5 +97,6 @@ export const Logout = asynchandler(async (req, res) => {
 
 export const getMe = asynchandler(async (req, res) => {
   const user = req.user;
+  console.log("User from getme :",user)
   res.json(new ApiResponse(user, "User Fetched Successfully ", 200));
 });
