@@ -19,8 +19,10 @@ app.use(express.json({limit:'16kb'}))
 // ---------------ROUTES----------------
 
 import { UserRouter } from "./routes/user.route.js";
+import { OrderRouter } from "./routes/order.route.js";
 
 app.use("/api/v1/users",UserRouter)
+app.use("/api/v1/orders",OrderRouter)
 
 
 export default app

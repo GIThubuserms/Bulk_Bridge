@@ -10,7 +10,7 @@ const bidSchema = new mongoose.Schema(
 
     vendorId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Vendor",
       required: true,
     },
 
@@ -39,4 +39,5 @@ const bidSchema = new mongoose.Schema(
   },{ timestamps: true });
 
 
-export default mongoose.model("Bid", bidSchema);
+export const Bid=mongoose.model("Bid",bidSchema);
+  

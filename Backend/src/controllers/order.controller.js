@@ -1,8 +1,9 @@
-import { asynchandler } from "../utils/AsyncHandler";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { asynchandler } from "../utils/AsyncHandler.js";
 import { Order } from "../models/orders.model.js";
+import { Bid } from "../models/bid.model.js";
+
 
 export const postOrder = asynchandler(async (req, res) => {
   const {
@@ -25,52 +26,117 @@ export const postOrder = asynchandler(async (req, res) => {
     deadline,
   ];
 
-  // validating that NO field is empty
-  for (const key in fields) {
-    if (!key || key == null) {
-      return res
-        .status(400)
-        .json(new ApiResponse(null, "All Fields are required !!", 400));
+  for (const value of fields) {
+    if (!value) {
+      throw new ApiError(400, "All fields are required");
     }
   }
 
-  // Now Create a NEW order
-
-  const newOrder = Order.create({
-    title: title,
-    category: category,
-    description: description,
-    quantity: quantity,
-    budgetMax: budgetMax,
-    budgetMin: budgetMin,
-    deadline: deadline,
+  const newOrder = await Order.create({
+    purchaserId: req.user._id,
+    title,
+    category,
+    description,
+    quantity,
+    budgetMin,
+    budgetMax,
+    deadline,
   });
 
-  if (!newOrder) throw new ApiError(500, "Order Not Formed");
-
-  return res.json(
-    new ApiResponse(newOrder, "Order created successfully ", 200),
-  );
+  return res
+    .status(201)
+    .json(new ApiResponse(newOrder, "Order created successfully", 201));
 });
+
 
 export const getAllOrders = asynchandler(async (req, res) => {
-    
+  const orders = await Order.find({ status: "open" })
+    .populate("purchaserId", "username email")
+    .sort({ createdAt: -1 });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(orders, "Orders fetched successfully", 200));
 });
 
-export const getAllBids = asynchandler(async (req, res) => {});
 
-export const getOrderById = asynchandler(async (req, res) => {});
+export const getOrderById = asynchandler(async (req, res) => {
+  const { orderId } = req.params;
 
-export const updateOrder = asynchandler(async (req, res) => {});
+  const order = await Order.findById(orderId)
+    .populate("purchaserId", "username email")
+    .populate("selectedVendorId", "username email");
 
-export const getMyOrders = asynchandler(async (req, res) => {});
-// purchaser sees only their orders
+  if (!order) throw new ApiError(404, "Order not found");
 
-export const closeOrder = asynchandler(async (req, res) => {});
-// stop accepting bids
+  return res
+    .status(200)
+    .json(new ApiResponse(order, "Order fetched successfully", 200));
+});
 
-export const deleteOrder = asynchandler(async (req, res) => {});
-// only if no bid accepted
 
-export const selectWinningBid = asynchandler(async (req, res) => {});
-// purchaser selects vendor
+export const getMyOrders = asynchandler(async (req, res) => {
+  const orders = await Order.find({
+    purchaserId: req.user._id,
+  }).sort({ createdAt: -1 });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(orders, "Your orders fetched", 200));
+});
+
+
+export const getAllBids = asynchandler(async (req, res) => {
+  const { orderId } = req.params;
+
+  const bids = await Bid.find({ orderId })
+    .populate("vendorId", "username email")
+    .sort({ createdAt: -1 });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(bids, "Bids fetched successfully", 200));
+});
+
+
+export const closeOrder = asynchandler(async (req, res) => {
+  const { orderId } = req.params;
+
+  const order = await Order.findById(orderId);
+
+  if (!order) throw new ApiError(404, "Order not found");
+
+  if (order.purchaserId.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "Not authorized");
+  }
+
+  order.status = "completed";
+  await order.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(order, "Order closed successfully", 200));
+});
+
+
+export const selectWinningBid = asynchandler(async (req, res) => {
+  const { orderId, bidId } = req.params;
+
+  const bid = await Bid.findById(bidId);
+  if (!bid) throw new ApiError(404, "Bid not found");
+
+  const order = await Order.findById(orderId);
+  if (!order) throw new ApiError(404, "Order not found");
+
+  if (order.selectedVendorId) {
+    throw new ApiError(400, "Vendor already selected");
+  }
+
+  order.selectedVendorId = bid.vendorId;
+  order.status = "In Progress";
+  await order.save();
+
+  return res.json(
+    new ApiResponse(order, "Vendor selected successfully", 200)
+  );
+});

@@ -47,12 +47,7 @@ const orderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: [
-        "open",
-        "awarded",
-        "completed",
-        "cancelled",
-      ],
+      enum: ["open", "In Progress", "completed"],
       default: "open",
     },
 
@@ -62,8 +57,7 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const Order=mongoose.model("Order",orderSchema);
-
+export const Order = mongoose.model("Order", orderSchema);
