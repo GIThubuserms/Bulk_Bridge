@@ -1,6 +1,6 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "./context/AuthContext.jsx";
-
+import { PurchaseProvider } from "./context/PurchaserContext.jsx";
 
 import Header from "./components/Header.jsx";
 import RoleSelection from "./pages/RoleSelection.jsx";
@@ -23,11 +23,7 @@ function ProtectedLayout() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   if (!user) {
@@ -37,33 +33,7 @@ function ProtectedLayout() {
   return (
     <div className="min-h-screen bg-slate-50">
       <Header />
-      <Routes>
-        <Route path="profile" element={<Profile />} />
-        <Route path="chat/:id" element={<Chat />} />
-
-        {/* Purchaser */}
-        {user.role === "purchaser" && (
-          <>
-            <Route path="dashboard" element={<PurchaserDashboard />} />
-            <Route path="create-request" element={<CreateRequest />} />
-            <Route path="request/:id" element={<RequestDetail />} />
-            <Route path="my-requests" element={<PurchaserDashboard />} />
-          </>
-        )}
-
-        {/* Vendor */}
-        {user.role === "vendor" && (
-          <>
-            <Route path="dashboard" element={<VendorDashboard />} />
-            <Route path="request/:id" element={<VendorRequestDetail />} />
-            <Route path="my-bids" element={<VendorDashboard />} />
-            <Route path="connects" element={<ConnectPage />} />
-          </>
-        )}
-
-        {/* Fallback inside app */}
-        <Route path="*" element={<Navigate to="dashboard" replace />} />
-      </Routes>
+      <Outlet />
     </div>
   );
 }
@@ -71,12 +41,44 @@ function ProtectedLayout() {
 function App() {
   return (
     <Routes>
+      {/* Public */}
       <Route path="/" element={<RoleSelection />} />
       <Route path="/login/:role" element={<Login />} />
       <Route path="/signup/:role" element={<Signup />} />
 
-      <Route path="/app/*" element={<ProtectedLayout />} />
+      {/* Protected */}
+      <Route path="/app" element={<ProtectedLayout />}>
+        <Route path="profile" element={<Profile />} />
+        <Route path="chat/:id" element={<Chat />} />
 
+        {/* Purchaser */}
+        <Route
+          path="purchaser"
+          element={
+            <PurchaseProvider>
+              <Outlet />
+            </PurchaseProvider>
+          }
+        >
+          <Route path="dashboard" element={<PurchaserDashboard />} />
+          <Route path="create-request" element={<CreateRequest />} />
+          <Route path="request/:requestId" element={<RequestDetail />} />
+          <Route path="my-requests" element={<PurchaserDashboard />} />
+        </Route>
+
+        {/* Vendor */}
+        <Route path="vendor" element={<Outlet />}>
+          <Route path="dashboard" element={<VendorDashboard />} />
+          <Route path="request/:id" element={<VendorRequestDetail />} />
+          <Route path="my-bids" element={<VendorDashboard />} />
+          <Route path="connects" element={<ConnectPage />} />
+        </Route>
+
+        {/* App fallback */}
+        <Route path="*" element={<Navigate to="profile" replace />} />
+      </Route>
+
+      {/* Global fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

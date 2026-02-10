@@ -3,7 +3,7 @@ import PropTypes from "prop-types"; // <-- import this
 
 const AuthContext = createContext(null);
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);

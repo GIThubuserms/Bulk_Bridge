@@ -18,7 +18,7 @@ export default function Login() {
 
     try {
       await signIn({ email, password });
-      navigate("/app/dashboard", { replace: true });
+      navigate(`/app/${role}/dashboard`, { replace: true });
     } catch (err) {
       console.log(err);
 
