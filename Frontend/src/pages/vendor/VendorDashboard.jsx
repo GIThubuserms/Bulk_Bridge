@@ -79,9 +79,7 @@ export default function VendorDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">
-            Browse Requests
-          </h1>
+          <h1 className="text-3xl font-bold text-slate-900">Browse Requests</h1>
           <p className="text-slate-600 mt-1">
             Find and bid on bulk order opportunities
           </p>
@@ -215,9 +213,7 @@ export default function VendorDashboard() {
       {filteredRequests.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border">
           <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold">
-            No requests found
-          </h3>
+          <h3 className="text-xl font-semibold">No requests found</h3>
         </div>
       ) : (
         <div className="grid gap-4">
@@ -226,16 +222,18 @@ export default function VendorDashboard() {
               key={request._id}
               className="bg-white rounded-xl p-6 border hover:shadow"
             >
-              <h3 className="text-xl font-semibold mb-2">
-                {request.title}
-              </h3>
+              <h3 className="text-xl font-semibold mb-2">{request.title}</h3>
 
               <p className="text-slate-600 mb-3 line-clamp-2">
                 {request.description}
               </p>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <Info icon={Package} label="Quantity" value={request.quantity} />
+                <Info
+                  icon={Package}
+                  label="Quantity"
+                  value={request.quantity}
+                />
                 <Info
                   icon={DollarSign}
                   label="Budget"
@@ -255,9 +253,7 @@ export default function VendorDashboard() {
 
               <div className="flex justify-end">
                 <button
-                  onClick={() =>
-                    navigate(`/app/vendor/requests/${request._id}`)
-                  }
+                  onClick={() => navigate(`/app/vendor/request/${request._id}`)}
                   className="px-6 py-2 bg-slate-900 text-white rounded-lg"
                 >
                   View & Bid
@@ -286,9 +282,7 @@ function Info({ icon: Icon, label, value }) {
 function FilterInput({ label, element }) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-2">
-        {label}
-      </label>
+      <label className="block text-sm font-medium mb-2">{label}</label>
       {element}
     </div>
   );
