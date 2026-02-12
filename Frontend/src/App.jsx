@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "./context/AuthContext.jsx";
 import { PurchaseProvider } from "./context/PurchaserContext.jsx";
+import { VendorProvider } from "./context/VendorContext.jsx";
 
 import Header from "./components/Header.jsx";
 import RoleSelection from "./pages/RoleSelection.jsx";
@@ -23,7 +24,11 @@ function ProtectedLayout() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   if (!user) {
@@ -66,10 +71,16 @@ function App() {
           <Route path="my-requests" element={<PurchaserDashboard />} />
         </Route>
 
-        {/* Vendor */}
-        <Route path="vendor" element={<Outlet />}>
+        <Route
+          path="vendor"
+          element={
+            <VendorProvider>
+              <Outlet />
+            </VendorProvider>
+          }
+        >
           <Route path="dashboard" element={<VendorDashboard />} />
-          <Route path="request/:id" element={<VendorRequestDetail />} />
+          <Route path="request/:requestId" element={<VendorRequestDetail />} />
           <Route path="my-bids" element={<VendorDashboard />} />
           <Route path="connects" element={<ConnectPage />} />
         </Route>

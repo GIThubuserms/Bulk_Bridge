@@ -1,35 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useVendor } from "../context/VendorContext.jsx"; // ✅ added
 import { User, ShoppingBag, Menu, X, Coins } from "lucide-react";
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function Header() {
   const { user, signOut } = useAuth();
+  const { connects } = useVendor(); 
+
   const navigate = useNavigate();
   const location = useLocation();
 
   const [showProfile, setShowProfile] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [connects, setConnects] = useState(null);
-
-  useEffect(() => {
-    if (user?.role === "vendor") {
-      loadConnects();
-    }
-  }, [user]);
-
-  const loadConnects = async () => {
-    const res = await fetch(`${BASE_URL}/api/v1/connects/me`, {
-      credentials: "include",
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      setConnects(data.data);
-    }
-  };
 
   const basePath =
     user?.role === "purchaser"
@@ -42,6 +25,7 @@ export default function Header() {
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+          
           {/* Logo */}
           <Link to={`${basePath}/dashboard`} className="flex items-center">
             <ShoppingBag className="w-8 h-8 text-slate-900" />
@@ -77,21 +61,36 @@ export default function Header() {
             )}
 
             {user?.role === "vendor" && (
-              <Link
-                to={`${basePath}/my-bids`}
-                className={`px-4 py-2 rounded-lg font-medium ${
-                  isActive(`${basePath}/my-bids`)
-                    ? "bg-slate-100 text-slate-900"
-                    : "text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                My Bids
-              </Link>
+              <>
+                <Link
+                  to={`${basePath}/my-bids`}
+                  className={`px-4 py-2 rounded-lg font-medium ${
+                    isActive(`${basePath}/my-bids`)
+                      ? "bg-slate-100 text-slate-900"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  My Bids
+                </Link>
+
+                <Link
+                  to={`${basePath}/connects`}
+                  className={`px-4 py-2 rounded-lg font-medium ${
+                    isActive(`${basePath}/connects`)
+                      ? "bg-slate-100 text-slate-900"
+                      : "text-slate-600 hover:bg-slate-50"
+                  }`}
+                >
+                  Connects
+                </Link>
+              </>
             )}
           </nav>
 
           {/* Right Side */}
           <div className="flex items-center space-x-4">
+
+            {/* Connect Counter */}
             {user?.role === "vendor" && connects && (
               <Link
                 to={`${basePath}/connects`}

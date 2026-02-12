@@ -42,7 +42,7 @@ export default function CreateRequest() {
     try {
       const data = await postOrder(formData);
       console.log("Response:", data); // <-- check response
-      navigate("/dashboard");
+      navigate("/app/purchaser/dashboard");
     } catch (err) {
       console.log("Error:", err.message);
     }
