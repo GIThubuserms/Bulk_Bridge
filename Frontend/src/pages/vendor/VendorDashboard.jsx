@@ -34,6 +34,7 @@ export default function VendorDashboard() {
     setFilters,
     showFilters,
     setShowFilters,
+    vendorProfile,
   } = useVendor();
 
   // ✅ Safe + Optimized Filtering
@@ -41,6 +42,7 @@ export default function VendorDashboard() {
     if (!requests || requests.length === 0) return [];
 
     return requests.filter((request) => {
+
       // Category filter
       if (
         filters.category !== "All Categories" &&
@@ -52,9 +54,7 @@ export default function VendorDashboard() {
       // Search filter
       if (
         filters.search &&
-        !request.title
-          ?.toLowerCase()
-          .includes(filters.search.toLowerCase())
+        !request.title?.toLowerCase().includes(filters.search.toLowerCase())
       ) {
         return false;
       }
@@ -63,17 +63,15 @@ export default function VendorDashboard() {
       if (
         filters.minQuantity &&
         Number(request.quantity) < Number(filters.minQuantity)
-      ) {
+      )
         return false;
-      }
 
       // Max Quantity
       if (
         filters.maxQuantity &&
         Number(request.quantity) > Number(filters.maxQuantity)
-      ) {
+      )
         return false;
-      }
 
       // Location filter
       if (
@@ -81,13 +79,12 @@ export default function VendorDashboard() {
         !request.delivery_location
           ?.toLowerCase()
           .includes(filters.location.toLowerCase())
-      ) {
+      )
         return false;
-      }
 
       return true;
     });
-  }, [requests, filters]);
+  }, [requests, filters, vendorProfile]);
 
   if (loading) {
     return (
@@ -211,7 +208,6 @@ export default function VendorDashboard() {
                 />
               }
             />
-
           </div>
         )}
       </div>
@@ -255,9 +251,7 @@ export default function VendorDashboard() {
 
               <div className="flex justify-end">
                 <button
-                  onClick={() =>
-                    navigate(`/app/vendor/request/${request._id}`)
-                  }
+                  onClick={() => navigate(`/app/vendor/request/${request._id}`)}
                   className="px-6 py-2 bg-slate-900 text-white rounded-lg"
                 >
                   View & Bid

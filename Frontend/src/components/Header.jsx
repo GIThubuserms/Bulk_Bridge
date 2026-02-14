@@ -47,19 +47,7 @@ export default function Header() {
               Dashboard
             </Link>
 
-            {user?.role === "purchaser" && (
-              <Link
-                to={`${basePath}/my-requests`}
-                className={`px-4 py-2 rounded-lg font-medium ${
-                  isActive(`${basePath}/my-requests`)
-                    ? "bg-slate-100 text-slate-900"
-                    : "text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                My Requests
-              </Link>
-            )}
-
+          
             {user?.role === "vendor" && (
               <>
                 <Link

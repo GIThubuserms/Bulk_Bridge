@@ -37,7 +37,7 @@ export default function PurchaserDashboard() {
     switch (status) {
       case "open":
         return "bg-blue-100 text-blue-700";
-      case "in progress":
+      case "In Progress":
         return "bg-amber-100 text-amber-700";
       case "completed":
         return "bg-green-100 text-green-700";
@@ -50,7 +50,7 @@ export default function PurchaserDashboard() {
     switch (status) {
       case "open":
         return <Package className="w-4 h-4" />;
-      case "in progress":
+      case "In Progress":
         return <Clock className="w-4 h-4" />;
       case "completed":
         return <CheckCircle className="w-4 h-4" />;
@@ -91,7 +91,7 @@ export default function PurchaserDashboard() {
         {[
           { label: "All", value: "all" },
           { label: "Open", value: "open" },
-          { label: "In Progress", value: "in progress" },
+          { label: "In Progress", value: "In Progress" },
           { label: "Completed", value: "completed" },
         ].map((item) => (
           <button

@@ -20,6 +20,8 @@ export default function RequestDetail() {
   const [order, setOrder] = useState(null);
   const [bids, setBids] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshToggle, setRefreshToggle] = useState(false);
+
 
   useEffect(() => {
     console.log("Paramas Id : ", requestId);
@@ -28,12 +30,10 @@ export default function RequestDetail() {
         const orderData = await getOrderById(requestId);
         const bidsData = await getBidsOnOrder(requestId);
 
+        console.log("BID DATA : ", bidsData);
 
-        
         setOrder(orderData);
         setBids(bidsData || []);
-
-
       } catch (err) {
         console.error(err);
       } finally {
@@ -42,7 +42,7 @@ export default function RequestDetail() {
     };
 
     loadData();
-  }, [requestId]);
+  }, [requestId,refreshToggle]);
 
   if (loading) {
     return (
@@ -120,27 +120,56 @@ export default function RequestDetail() {
               bids.map((bid) => (
                 <div
                   key={bid._id}
-                  className={`border rounded-xl p-6 mb-4 ${
+                  className={`border rounded-xl p-6 mb-4 shadow-sm hover:shadow-md transition-all ${
                     order.selectedVendorId === bid.vendor.id
                       ? "border-green-500 bg-green-50"
-                      : ""
+                      : "bg-white"
                   }`}
                 >
-                  <h3 className="font-semibold">
-                    {bid.vendor.companyName || bid.vendor.username}
-                  </h3>
-
-                  <div className="flex justify-between my-4">
-                    <span>${bid.totalPrice}</span>
-                    <span>{bid.productionTimeDays} days</span>
+                  {/* Vendor Info */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold">
+                        {bid.vendor.companyName}
+                      </h3>
+                      <p className="text-sm text-slate-500">
+                        {bid.vendor.username}
+                      </p>
+                      <p className="text-sm text-slate-600 mt-1">
+                        {bid.vendor.description}
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <span className="text-sm text-slate-500">Rating</span>
+                      <div className="font-medium text-green-700">
+                        {bid.vendor.rating} ⭐
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex gap-3 pt-4 border-t">
+                  {/* Bid Details */}
+                  <div className="flex justify-between mb-4 border-t pt-4">
+                    <div>
+                      <span className="text-sm text-slate-500">Price</span>
+                      <div className="font-medium">${bid.totalPrice}</div>
+                    </div>
+                    <div>
+                      <span className="text-sm text-slate-500">
+                        Production Time
+                      </span>
+                      <div className="font-medium">
+                        {bid.productionTimeDays} days
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3">
                     <button
                       onClick={() =>
                         navigate(`/chat/${order._id}:${bid.vendor.userId}`)
                       }
-                      className="flex-1 border rounded-lg py-2 flex justify-center gap-2"
+                      className="flex-1 border rounded-lg py-2 flex justify-center gap-2 hover:bg-slate-100 transition"
                     >
                       <MessageSquare className="w-4 h-4" />
                       Chat
@@ -148,10 +177,12 @@ export default function RequestDetail() {
 
                     {order.status === "open" && !order.selectedVendorId && (
                       <button
-                        onClick={() =>
-                          selectWinningBid(order._id, bid._id)
-                        }
-                        className="flex-1 bg-slate-900 text-white rounded-lg py-2"
+                        onClick={async () => {
+                          await selectWinningBid(order._id, bid._id);
+                          alert("Bids selected successfully")
+                          setRefreshToggle(prev => !prev);
+                        }}
+                        className="flex-1 bg-slate-900 text-white rounded-lg py-2 hover:bg-slate-800 transition"
                       >
                         Accept Bid
                       </button>

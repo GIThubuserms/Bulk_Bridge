@@ -69,7 +69,6 @@ function App() {
           <Route path="dashboard" element={<PurchaserDashboard />} />
           <Route path="create-request" element={<CreateRequest />} />
           <Route path="request/:requestId" element={<RequestDetail />} />
-          <Route path="my-requests" element={<PurchaserDashboard />} />
         </Route>
 
         <Route

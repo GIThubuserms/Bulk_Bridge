@@ -9,6 +9,8 @@ export const VendorProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [requests, setRequests] = useState([]);
   const [dashboardStats, setDashboardStats] = useState(null);
+  const [vendorProfile, setVendorProfile] = useState(null);
+
 
   const [filters, setFilters] = useState({
     category: "All Categories",
@@ -49,6 +51,7 @@ export const VendorProvider = ({ children }) => {
     const data = await res.json();
 
 
+    setVendorProfile(data.data);
     setConnects(data.data.connects);
     
   };
@@ -100,7 +103,7 @@ export const VendorProvider = ({ children }) => {
     const data = await res.json();
 
     console.log("DATA : ",data)
-    await getVendorProfile(); 
+    await getAvailableRequests(); 
     
     return data;
   };
@@ -147,6 +150,7 @@ export const VendorProvider = ({ children }) => {
         getMyBids,
         submitBid,
         purchaseConnects,
+        vendorProfile
       }}
     >
       {children}

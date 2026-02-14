@@ -127,6 +127,7 @@ export const getAllBids = asynchandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(mergedBids, "Bids fetched successfully", 200));
 });
+
 export const closeOrder = asynchandler(async (req, res) => {
   const { orderId } = req.params;
 
