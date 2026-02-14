@@ -11,27 +11,29 @@ import { usePurchase } from "../../context/PurchaserContext.jsx";
 import { useParams, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 
-
-
 export default function RequestDetail() {
   const { requestId } = useParams();
   const navigate = useNavigate();
 
-  const { getOrderById, getBidsOnOrder, acceptBid } = usePurchase();
+  const { getOrderById, getBidsOnOrder, selectWinningBid } = usePurchase();
 
   const [order, setOrder] = useState(null);
   const [bids, setBids] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("Paramas Id : ",requestId)
+    console.log("Paramas Id : ", requestId);
     const loadData = async () => {
       try {
         const orderData = await getOrderById(requestId);
         const bidsData = await getBidsOnOrder(requestId);
 
+
+        
         setOrder(orderData);
         setBids(bidsData || []);
+
+
       } catch (err) {
         console.error(err);
       } finally {
@@ -119,24 +121,24 @@ export default function RequestDetail() {
                 <div
                   key={bid._id}
                   className={`border rounded-xl p-6 mb-4 ${
-                    order.selectedVendorId === bid.vendor._id
+                    order.selectedVendorId === bid.vendor.id
                       ? "border-green-500 bg-green-50"
                       : ""
                   }`}
                 >
                   <h3 className="font-semibold">
-                    {bid.vendor.companyName || bid.vendor.fullName}
+                    {bid.vendor.companyName || bid.vendor.username}
                   </h3>
 
                   <div className="flex justify-between my-4">
-                    <span>${bid.price}</span>
-                    <span>{bid.productionTime} days</span>
+                    <span>${bid.totalPrice}</span>
+                    <span>{bid.productionTimeDays} days</span>
                   </div>
 
                   <div className="flex gap-3 pt-4 border-t">
                     <button
                       onClick={() =>
-                        navigate(`/chat/${order._id}:${bid.vendor._id}`)
+                        navigate(`/chat/${order._id}:${bid.vendor.userId}`)
                       }
                       className="flex-1 border rounded-lg py-2 flex justify-center gap-2"
                     >
@@ -147,7 +149,7 @@ export default function RequestDetail() {
                     {order.status === "open" && !order.selectedVendorId && (
                       <button
                         onClick={() =>
-                          acceptBid(order._id, bid._id, bid.vendor._id)
+                          selectWinningBid(order._id, bid._id)
                         }
                         className="flex-1 bg-slate-900 text-white rounded-lg py-2"
                       >
@@ -199,7 +201,6 @@ function Detail({ label, value }) {
     </div>
   );
 }
-
 
 Info.propTypes = {
   icon: PropTypes.node.isRequired,

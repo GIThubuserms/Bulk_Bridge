@@ -1,6 +1,6 @@
 import Router from 'express'
 import { getMe, Login, Logout, RegisterUser } from '../controllers/user.controller.js'
-import { verifyUser } from '../middlewares/UserVerify.js'
+import { verifyUser } from "../middlewares/UserVerify.js"
 
 
 export const UserRouter=Router()

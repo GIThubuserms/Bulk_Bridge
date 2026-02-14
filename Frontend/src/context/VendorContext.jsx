@@ -1,16 +1,15 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { useEffect } from "react";
 
 const VendorContext = createContext();
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const VendorProvider = ({ children }) => {
-  const [packages, setPackages] = useState([]);
-  const [connects, setConnects] = useState(null);
+  const [connects, setConnects] = useState(0);
   const [loading, setLoading] = useState(false);
   const [requests, setRequests] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState(null);
+
   const [filters, setFilters] = useState({
     category: "All Categories",
     search: "",
@@ -18,6 +17,7 @@ export const VendorProvider = ({ children }) => {
     maxQuantity: "",
     location: "",
   });
+
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -27,105 +27,126 @@ export const VendorProvider = ({ children }) => {
   const loadVendorData = async () => {
     try {
       setLoading(true);
-
-      // MOCK DATA (replace with API later)
-      setRequests([
-        {
-          _id: "1",
-          title: "Custom T-Shirts Order",
-          description: "Need 500 custom printed t-shirts",
-          category: "Custom T-Shirts",
-          quantity: 500,
-          budget_min: 2000,
-          budget_max: 4000,
-          deadline: "2025-03-01",
-          delivery_location: "Karachi",
-        },
+      await Promise.all([
+        getVendorProfile(),
+        getVendorDashboard(),
+        getAvailableRequests(),
       ]);
-
-      setConnects({ available: 10 });
     } catch (err) {
-      console.error("Vendor data error:", err);
+      console.log("Error : ", err);
     } finally {
       setLoading(false);
     }
   };
 
-  /* ---------------- Load Connect Packages ---------------- */
-  const getConnectPackages = async () => {
-    try {
-      setLoading(true);
+  const getVendorProfile = async () => {
+    const res = await fetch(`${BASE_URL}/api/v1/vendor/profile`, {
+      method: "GET",
+      credentials: "include",
+    });
 
-      const res = await fetch(`${BASE_URL}/connect-packages`);
-      const data = await res.json();
+    console.log("Vendor Profile : ", res);
+    const data = await res.json();
 
-      if (data.success) {
-        setPackages(data.data);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
+
+    setConnects(data.data.connects);
+    
+  };
+
+  const getVendorDashboard = async () => {
+    const res = await fetch(`${BASE_URL}/api/v1/vendor/dashboard`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setDashboardStats(data.data);
     }
   };
 
-  /* ---------------- Load Vendor Connects ---------------- */
-  const getMyConnects = async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/connects/me`, {
-        credentials: "include",
-      });
+  const getAvailableRequests = async () => {
+    const res = await fetch(`${BASE_URL}/api/v1/orders/getallorders`, {
+      method: "GET",
+      credentials: "include",
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (data.success) {
-        setConnects(data.data);
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    setRequests(data.data);
   };
 
-  /* ---------------- Purchase Connect Package ---------------- */
-  const purchaseConnects = async (packageId) => {
-    try {
-      const res = await fetch(`${BASE_URL}/connects/purchase`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ packageId }),
-      });
+  const getMyBids = async () => {
+    const res = await fetch(`${BASE_URL}/api/v1/bid/mybids`, {
+      credentials: "include",
+    });
 
-      const data = await res.json();
+    const data = await res.json();
+    return data.data;
+  };
 
-      if (data.success) {
-        await getMyConnects(); // refresh connects
-        return true;
-      }
+  const submitBid = async (orderId, bidData) => {
+    console.log("ORDER ID  : ",orderId);
+    console.log("BID DATA  : ",bidData);
+    
+    const res = await fetch(`${BASE_URL}/api/v1/bid/postbid/${orderId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(bidData),
+    });
 
-      return false;
-    } catch (error) {
-      console.log(error);
-      return false;
+    const data = await res.json();
+
+    console.log("DATA : ",data)
+    await getVendorProfile(); 
+    
+    return data;
+  };
+
+  const purchaseConnects = async (amount) => {
+    const res = await fetch(`${BASE_URL}/api/v1/vendor/connects/purchase`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ amount }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setConnects(data.data);
     }
+
+    return data;
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      category: "All Categories",
+      search: "",
+      minQuantity: "",
+      maxQuantity: "",
+      location: "",
+    });
   };
 
   return (
     <VendorContext.Provider
       value={{
         requests,
-        packages,
         connects,
+        dashboardStats,
         loading,
-        getConnectPackages,
-        getMyConnects,
-        purchaseConnects,
         filters,
         setFilters,
+        clearFilters,
         showFilters,
         setShowFilters,
+        getMyBids,
+        submitBid,
+        purchaseConnects,
       }}
     >
       {children}

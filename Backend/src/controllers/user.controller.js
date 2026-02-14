@@ -3,42 +3,51 @@ import ApiResponse from "../utils/ApiResponse.js";
 import { asynchandler } from "../utils/AsyncHandler.js";
 import { User } from "../models/user.model.js";
 import { generateAccessandRefreshTokens } from "../utils/TokenGenerator.js";
+import { Vendor } from "../models/vendorProfile.model.js";
 
 export const RegisterUser = asynchandler(async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const { username, email, password, role, bussinessname, description } =
+    req.body;
 
-  console.log("Username : " + username);
   if (!username || !email || !password || !role) {
-    throw new ApiError(400, "All fields are required fields");
+    throw new ApiError(400, "All fields are required");
   }
 
-  console.log("Testing 123");
-  const IsuserExist = await User.findOne({
+  const isUserExist = await User.findOne({
     $or: [{ username }, { email }],
   });
 
-  if (IsuserExist) {
-    throw new ApiError(400, "User Already Exists");
+  if (isUserExist) {
+    throw new ApiError(400, "User already exists");
   }
 
-  console.log("Testing 123");
+  const newUser = await User.create({
+    username,
+    email,
+    password,
+    role,
+  });
 
-  const newUser = await User.create(req.body);
-  console.log("Testing 123");
+  if (!newUser) {
+    throw new ApiError(500, "User not created");
+  }
 
-  if (!newUser) throw new ApiError(500, "User Not Formed");
 
-  const userverify = await User.findById(newUser._id).select(
-    "-password -refreshToken",
+  if (role === "vendor") {
+    await Vendor.create({
+      userId: newUser._id,
+      bussinessname: bussinessname || "New Vendor",
+      description: description || "Vendor description",
+    });
+  }
+
+
+  const userVerify = await User.findById(newUser._id).select(
+    "-password -refreshToken"
   );
-  console.log("Testing 123");
 
-  if (!userverify) throw new ApiError(500, "User not registred");
-
-  console.log("Testing 123");
-
-  return res.json(
-    new ApiResponse(userverify, "User registered successfully ", 200),
+  return res.status(201).json(
+    new ApiResponse(userVerify, "User registered successfully", 201)
   );
 });
 

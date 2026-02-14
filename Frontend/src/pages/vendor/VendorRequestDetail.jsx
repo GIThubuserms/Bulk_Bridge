@@ -4,7 +4,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Calendar,
-  MapPin,
   Package,
   DollarSign,
   AlertCircle,
@@ -45,15 +44,13 @@ export default function VendorRequestDetail() {
     setSubmitting(true);
 
     try {
-      await submitBid({
-        requestId: request._id,
-        bid: {
-          price: Number(bidForm.price),
-          production_time: Number(bidForm.production_time),
+      await submitBid(request._id,{
+          totalPrice: Number(bidForm.price),
+          productionTimeDays: Number(bidForm.production_time),
           price_breakdown: bidForm.price_breakdown,
           message: bidForm.message,
         },
-      });
+      );
 
       alert("Bid submitted successfully");
       navigate("/app/vendor/dashboard");
@@ -81,9 +78,9 @@ export default function VendorRequestDetail() {
           <div>
             <h1 className="text-3xl font-bold text-slate-900 mb-2">{request.title}</h1>
             <div className="flex items-center space-x-4 text-sm text-slate-600">
-              <span>Posted by Murtaza</span>
+              <span>{request.purchaserId.username}</span>
               <span>•</span>
-              <span>{new Date(request.created_at).toLocaleDateString()}</span>
+              <span>{request.createdAt}</span>
             </div>
           </div>
           <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
@@ -99,17 +96,12 @@ export default function VendorRequestDetail() {
           <Info
             icon={DollarSign}
             label="Budget"
-            value={`$${request.budget_min} - $${request.budget_max}`}
+            value={`$${request.budgetMin} - $${request.budgetMax}`}
           />
           <Info
             icon={Calendar}
             label="Deadline"
             value={new Date(request.deadline).toLocaleDateString()}
-          />
-          <Info
-            icon={MapPin}
-            label="Location"
-            value={request.delivery_location}
           />
         </div>
 

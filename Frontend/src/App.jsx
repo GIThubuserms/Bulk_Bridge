@@ -18,6 +18,7 @@ import ConnectPage from "./pages/vendor/ConnectPage.jsx";
 
 import Chat from "./pages/Chat.jsx";
 import Profile from "./pages/Profile.jsx";
+import VendorBids from "./pages/vendor/VendorBids.jsx";
 
 /* ---------------- Protected Layout ---------------- */
 function ProtectedLayout() {
@@ -81,7 +82,7 @@ function App() {
         >
           <Route path="dashboard" element={<VendorDashboard />} />
           <Route path="request/:requestId" element={<VendorRequestDetail />} />
-          <Route path="my-bids" element={<VendorDashboard />} />
+          <Route path="my-bids" element={<VendorBids />} />
           <Route path="connects" element={<ConnectPage />} />
         </Route>
 

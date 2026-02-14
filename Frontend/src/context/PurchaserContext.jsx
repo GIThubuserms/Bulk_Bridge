@@ -28,7 +28,7 @@ export const PurchaseProvider = ({ children }) => {
 
       const data = await res.json();
 
-      console.log("DATA : ", data);
+      // console.log("DATA : ", data);
 
       if (!res.ok) throw new Error(data.message || "Something went wrong");
 

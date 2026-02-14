@@ -19,11 +19,11 @@ const VendorProfile = new Schema({
     default: 10
   },
   completeorders: {
-    type: Numbers,
+    type: Number,
     default: 1
   },
   Rating: {
-    type: Numbers,
+    type: Number,
     default: 3
   },
 },{timestamps:true});

@@ -8,7 +8,7 @@ export const OrderRouter=Router()
 
 
 OrderRouter.route('/postorder').post(verifyUser,requirePurchaser,postOrder)
-OrderRouter.route('/getallorders').post(verifyUser,requirePurchaser,getAllOrders)
+OrderRouter.route('/getallorders').get(verifyUser,getAllOrders)
 OrderRouter.route('/getorderbyid/:orderId').post(verifyUser,requirePurchaser,getOrderById)
 OrderRouter.route('/getmyorders').post(verifyUser,requirePurchaser,getMyOrders)
 OrderRouter.route('/getallbids/:orderId').post(verifyUser,requirePurchaser,getAllBids)

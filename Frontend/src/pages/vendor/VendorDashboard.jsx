@@ -3,13 +3,13 @@ import {
   Search,
   Filter,
   Package,
-  MapPin,
   Calendar,
   DollarSign,
   Coins,
 } from "lucide-react";
-import { useVendor } from "../../context/VendorContext";
+import { useVendor } from "../../context/VendorContext.jsx";
 import { useNavigate } from "react-router-dom";
+import { useMemo } from "react";
 
 const categories = [
   "All Categories",
@@ -36,35 +36,58 @@ export default function VendorDashboard() {
     setShowFilters,
   } = useVendor();
 
-  const filteredRequests = requests.filter((request) => {
-    if (
-      filters.category !== "All Categories" &&
-      request.category !== filters.category
-    )
-      return false;
+  // ✅ Safe + Optimized Filtering
+  const filteredRequests = useMemo(() => {
+    if (!requests || requests.length === 0) return [];
 
-    if (
-      filters.search &&
-      !request.title.toLowerCase().includes(filters.search.toLowerCase())
-    )
-      return false;
+    return requests.filter((request) => {
+      // Category filter
+      if (
+        filters.category !== "All Categories" &&
+        request.category?.toLowerCase() !== filters.category.toLowerCase()
+      ) {
+        return false;
+      }
 
-    if (filters.minQuantity && request.quantity < Number(filters.minQuantity))
-      return false;
+      // Search filter
+      if (
+        filters.search &&
+        !request.title
+          ?.toLowerCase()
+          .includes(filters.search.toLowerCase())
+      ) {
+        return false;
+      }
 
-    if (filters.maxQuantity && request.quantity > Number(filters.maxQuantity))
-      return false;
+      // Min Quantity
+      if (
+        filters.minQuantity &&
+        Number(request.quantity) < Number(filters.minQuantity)
+      ) {
+        return false;
+      }
 
-    if (
-      filters.location &&
-      !request.delivery_location
-        .toLowerCase()
-        .includes(filters.location.toLowerCase())
-    )
-      return false;
+      // Max Quantity
+      if (
+        filters.maxQuantity &&
+        Number(request.quantity) > Number(filters.maxQuantity)
+      ) {
+        return false;
+      }
 
-    return true;
-  });
+      // Location filter
+      if (
+        filters.location &&
+        !request.delivery_location
+          ?.toLowerCase()
+          .includes(filters.location.toLowerCase())
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [requests, filters]);
 
   if (loading) {
     return (
@@ -85,7 +108,7 @@ export default function VendorDashboard() {
           </p>
         </div>
 
-        {connects && (
+        {connects !== undefined && (
           <div className="flex items-center gap-4">
             <div className="bg-slate-100 rounded-xl px-6 py-3">
               <div className="flex items-center gap-2">
@@ -95,7 +118,7 @@ export default function VendorDashboard() {
                     Available Connects
                   </div>
                   <div className="text-xl font-bold text-slate-900">
-                    {connects.available}
+                    {connects}
                   </div>
                 </div>
               </div>
@@ -189,22 +212,6 @@ export default function VendorDashboard() {
               }
             />
 
-            <FilterInput
-              label="Location"
-              element={
-                <input
-                  type="text"
-                  value={filters.location}
-                  onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      location: e.target.value,
-                    })
-                  }
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-              }
-            />
           </div>
         )}
       </div>
@@ -237,23 +244,20 @@ export default function VendorDashboard() {
                 <Info
                   icon={DollarSign}
                   label="Budget"
-                  value={`$${request.budget_min} - $${request.budget_max}`}
+                  value={`$${request.budgetMin} - $${request.budgetMax}`}
                 />
                 <Info
                   icon={Calendar}
                   label="Deadline"
                   value={new Date(request.deadline).toLocaleDateString()}
                 />
-                <Info
-                  icon={MapPin}
-                  label="Location"
-                  value={request.delivery_location}
-                />
               </div>
 
               <div className="flex justify-end">
                 <button
-                  onClick={() => navigate(`/app/vendor/request/${request._id}`)}
+                  onClick={() =>
+                    navigate(`/app/vendor/request/${request._id}`)
+                  }
                   className="px-6 py-2 bg-slate-900 text-white rounded-lg"
                 >
                   View & Bid

@@ -3,6 +3,9 @@ import ApiResponse from "../utils/ApiResponse.js";
 import { asynchandler } from "../utils/AsyncHandler.js";
 import { Order } from "../models/orders.model.js";
 import { Bid } from "../models/bid.model.js";
+import { Vendor } from "../models/vendorProfile.model.js";
+import { User } from "../models/user.model.js";
+
 
 
 export const postOrder = asynchandler(async (req, res) => {
@@ -48,17 +51,17 @@ export const postOrder = asynchandler(async (req, res) => {
     .json(new ApiResponse(newOrder, "Order created successfully", 201));
 });
 
-
 export const getAllOrders = asynchandler(async (req, res) => {
   const orders = await Order.find({ status: "open" })
     .populate("purchaserId", "username email")
     .sort({ createdAt: -1 });
 
+  console.log("ORDERS OPEN : ", orders);
+
   return res
     .status(200)
     .json(new ApiResponse(orders, "Orders fetched successfully", 200));
 });
-
 
 export const getOrderById = asynchandler(async (req, res) => {
   const { orderId } = req.params;
@@ -74,7 +77,6 @@ export const getOrderById = asynchandler(async (req, res) => {
     .json(new ApiResponse(order, "Order fetched successfully", 200));
 });
 
-
 export const getMyOrders = asynchandler(async (req, res) => {
   const orders = await Order.find({
     purchaserId: req.user._id,
@@ -85,20 +87,46 @@ export const getMyOrders = asynchandler(async (req, res) => {
     .json(new ApiResponse(orders, "Your orders fetched", 200));
 });
 
-
 export const getAllBids = asynchandler(async (req, res) => {
   const { orderId } = req.params;
 
-  const bids = await Bid.find({ orderId })
-    .populate("vendorId", "username email")
-    .sort({ createdAt: -1 });
+  const bids = await Bid.find({ orderId }).sort({ createdAt: -1 });
+
+  const mergedBids = await Promise.all(
+    bids.map(async (bid) => {
+      const vendor = await Vendor.findById(bid.vendorId);
+      const user = vendor ? await User.findById(vendor.userId) : null;
+
+      return {
+        _id: bid._id,
+        orderId: bid.orderId,
+        totalPrice: bid.totalPrice,
+        productionTimeDays: bid.productionTimeDays,
+        message: bid.message,
+        status: bid.status,
+        createdAt: bid.createdAt,
+        updatedAt: bid.updatedAt,
+        vendor: vendor
+          ? {
+              id: vendor._id,
+              companyName: vendor.bussinessname,
+              description: vendor.description,
+              connects: vendor.connects,
+              rating: vendor.Rating,
+              completeOrders: vendor.completeorders,
+              userId: user?._id,
+              username: user?.username,
+              email: user?.email,
+            }
+          : null,
+      };
+    }),
+  );
 
   return res
     .status(200)
-    .json(new ApiResponse(bids, "Bids fetched successfully", 200));
+    .json(new ApiResponse(mergedBids, "Bids fetched successfully", 200));
 });
-
-
 export const closeOrder = asynchandler(async (req, res) => {
   const { orderId } = req.params;
 
@@ -118,7 +146,6 @@ export const closeOrder = asynchandler(async (req, res) => {
     .json(new ApiResponse(order, "Order closed successfully", 200));
 });
 
-
 export const selectWinningBid = asynchandler(async (req, res) => {
   const { orderId, bidId } = req.params;
 
@@ -131,13 +158,10 @@ export const selectWinningBid = asynchandler(async (req, res) => {
   if (order.selectedVendorId) {
     throw new ApiError(400, "Vendor already selected");
   }
- 
 
   order.selectedVendorId = bid.vendorId;
   order.status = "In Progress";
   await order.save();
 
-  return res.json(
-    new ApiResponse(order, "Vendor selected successfully", 200)
-  );
+  return res.json(new ApiResponse(order, "Vendor selected successfully", 200));
 });
