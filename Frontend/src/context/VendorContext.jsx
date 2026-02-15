@@ -11,7 +11,6 @@ export const VendorProvider = ({ children }) => {
   const [dashboardStats, setDashboardStats] = useState(null);
   const [vendorProfile, setVendorProfile] = useState(null);
 
-
   const [filters, setFilters] = useState({
     category: "All Categories",
     search: "",
@@ -50,10 +49,8 @@ export const VendorProvider = ({ children }) => {
     console.log("Vendor Profile : ", res);
     const data = await res.json();
 
-
     setVendorProfile(data.data);
     setConnects(data.data.connects);
-    
   };
 
   const getVendorDashboard = async () => {
@@ -75,9 +72,23 @@ export const VendorProvider = ({ children }) => {
       credentials: "include",
     });
 
-    const data = await res.json();
+    const ordersData = await res.json();
+    const myBids = await getMyBids();
 
-    setRequests(data.data);
+    // 1️⃣ Extract correct orderIds from bids
+    const myBidOrderIds = myBids.map((bid) => bid.orderId?._id?.toString());
+
+    console.log("My Bid Order IDs:", myBidOrderIds);
+
+    // 2️⃣ Filter orders
+    const filteredOrders = ordersData.data.filter(
+      (order) => !myBidOrderIds.includes(order._id.toString()),
+    );
+
+    console.log("Filtered Orders:", filteredOrders);
+
+    // 3️⃣ Set only available orders
+    setRequests(filteredOrders);
   };
 
   const getMyBids = async () => {
@@ -90,9 +101,6 @@ export const VendorProvider = ({ children }) => {
   };
 
   const submitBid = async (orderId, bidData) => {
-    console.log("ORDER ID  : ",orderId);
-    console.log("BID DATA  : ",bidData);
-    
     const res = await fetch(`${BASE_URL}/api/v1/bid/postbid/${orderId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -102,9 +110,8 @@ export const VendorProvider = ({ children }) => {
 
     const data = await res.json();
 
-    console.log("DATA : ",data)
-    await getAvailableRequests(); 
-    
+    await getAvailableRequests();
+
     return data;
   };
 
@@ -150,7 +157,7 @@ export const VendorProvider = ({ children }) => {
         getMyBids,
         submitBid,
         purchaseConnects,
-        vendorProfile
+        vendorProfile,
       }}
     >
       {children}

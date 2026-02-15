@@ -16,7 +16,11 @@ export const getVendorProfile = asynchandler(async (req, res) => {
     });
   }
 
-  res.status(200).json(new ApiResponse(vendor,"Vendor Profile Fectched ",200))
+  res.status(200).json(new ApiResponse({user: req.user,vendor},
+      "Vendor Profile Fectched ",
+      200,
+    ),
+  );
 });
 
 /* ===============================

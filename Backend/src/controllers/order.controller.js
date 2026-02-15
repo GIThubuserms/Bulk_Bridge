@@ -6,8 +6,6 @@ import { Bid } from "../models/bid.model.js";
 import { Vendor } from "../models/vendorProfile.model.js";
 import { User } from "../models/user.model.js";
 
-
-
 export const postOrder = asynchandler(async (req, res) => {
   const {
     title,
@@ -160,6 +158,22 @@ export const selectWinningBid = asynchandler(async (req, res) => {
     throw new ApiError(400, "Vendor already selected");
   }
 
+  // 1️⃣ Accept selected bid
+  bid.status = "accepted";
+  await bid.save();
+
+  // 2️⃣ Reject all other bids for same order
+  await Bid.updateMany(
+    {
+      orderId: orderId,
+      _id: { $ne: bidId },
+    },
+    {
+      $set: { status: "rejected" },
+    },
+  );
+
+  // 3️⃣ Update order
   order.selectedVendorId = bid.vendorId;
   order.status = "In Progress";
   await order.save();

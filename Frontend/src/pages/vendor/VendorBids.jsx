@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useEffect, useState } from "react";
 import { useVendor } from "../../context/VendorContext.jsx";
-import { Package, DollarSign, Calendar, MapPin } from "lucide-react";
+import { Package, DollarSign, Calendar } from "lucide-react";
 
 export default function VendorBids() {
   const { getMyBids } = useVendor();
@@ -74,21 +74,17 @@ export default function VendorBids() {
                 label="Production Days"
                 value={bid.productionTimeDays}
               />
-              <Info
-                icon={MapPin}
-                label="Location"
-                value={bid.orderId?.delivery_location || "-"}
-              />
+
             </div>
 
             <div>
               <span
-                className={`px-3 py-1 rounded-full text-white font-medium ${
+                className={`inline-block px-4 py-2 rounded-full font-medium text-sm transition-colors duration-200 ${
                   bid.status === "accepted"
-                    ? "bg-green-500"
+                    ? "bg-green-100 text-green-800"
                     : bid.status === "rejected"
-                    ? "bg-red-500"
-                    : "bg-slate-500"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
               >
                 {bid.status.toUpperCase()}

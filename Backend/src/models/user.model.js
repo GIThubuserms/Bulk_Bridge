@@ -16,7 +16,7 @@ const Userschema = new Schema({
   },
   password: {
     type: String,
-    required: [true, "Password is required"],
+    required: [true, "PQassword is required"],
   },
   refreshToken: {
     type: String,

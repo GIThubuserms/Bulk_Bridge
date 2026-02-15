@@ -55,7 +55,7 @@ function App() {
       {/* Protected */}
       <Route path="/app" element={<ProtectedLayout />}>
         <Route path="profile" element={<Profile />} />
-        <Route path="chat/:id" element={<Chat />} />
+        <Route path="chat" element={<Chat />} />
 
         {/* Purchaser */}
         <Route
@@ -69,6 +69,8 @@ function App() {
           <Route path="dashboard" element={<PurchaserDashboard />} />
           <Route path="create-request" element={<CreateRequest />} />
           <Route path="request/:requestId" element={<RequestDetail />} />
+          <Route path="chat" element={<Chat />} />
+
         </Route>
 
         <Route
