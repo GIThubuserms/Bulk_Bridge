@@ -22,7 +22,6 @@ export default function RequestDetail() {
   const [loading, setLoading] = useState(true);
   const [refreshToggle, setRefreshToggle] = useState(false);
 
-
   useEffect(() => {
     console.log("Paramas Id : ", requestId);
     const loadData = async () => {
@@ -31,6 +30,7 @@ export default function RequestDetail() {
         const bidsData = await getBidsOnOrder(requestId);
 
         console.log("BID DATA : ", bidsData);
+        console.log("BID DATA : ", orderData);
 
         setOrder(orderData);
         setBids(bidsData || []);
@@ -42,7 +42,7 @@ export default function RequestDetail() {
     };
 
     loadData();
-  }, [requestId,refreshToggle]);
+  }, [requestId, refreshToggle]);
 
   if (loading) {
     return (
@@ -167,7 +167,9 @@ export default function RequestDetail() {
                   <div className="flex gap-3">
                     <button
                       onClick={() =>
-                        navigate(`/chat/${order._id}:${bid.vendor.userId}`)
+                        navigate(
+                          `/app/purchaser/chat/${order._id}/${bid.vendor.userId}`,
+                        )
                       }
                       className="flex-1 border rounded-lg py-2 flex justify-center gap-2 hover:bg-slate-100 transition"
                     >
@@ -179,8 +181,8 @@ export default function RequestDetail() {
                       <button
                         onClick={async () => {
                           await selectWinningBid(order._id, bid._id);
-                          alert("Bids selected successfully")
-                          setRefreshToggle(prev => !prev);
+                          alert("Bids selected successfully");
+                          setRefreshToggle((prev) => !prev);
                         }}
                         className="flex-1 bg-slate-900 text-white rounded-lg py-2 hover:bg-slate-800 transition"
                       >

@@ -8,13 +8,13 @@ const chatSchema = new mongoose.Schema(
       required: true,
     },
 
-    purchaserId: {
+    senderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
-    vendorId: {
+    receiverId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,

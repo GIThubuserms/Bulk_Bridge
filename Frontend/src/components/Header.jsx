@@ -44,9 +44,9 @@ export default function Header() {
               Dashboard
             </Link>
             <Link
-              to={`${basePath}/chat`} // Navigates to chat list or chat page
+              to={`${basePath}/chats`} // Navigates to chat list or chat page
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                isActive(`${basePath}/chat`)
+                isActive(`${basePath}/chats`)
                   ? "bg-slate-100 text-slate-900"
                   : "text-slate-600 hover:bg-slate-50"
               }`}
@@ -79,9 +79,9 @@ export default function Header() {
                 </Link>
 
                 <Link
-                  to={`${basePath}/chat`} // Navigates to chat list or chat page
+                  to={`${basePath}/chats`} // Navigates to chat list or chat page
                   className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                    isActive(`${basePath}/chat`)
+                    isActive(`${basePath}/chats`)
                       ? "bg-slate-100 text-slate-900"
                       : "text-slate-600 hover:bg-slate-50"
                   }`}

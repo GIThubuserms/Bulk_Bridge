@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -6,39 +5,49 @@ import { useChat } from "../context/ChatContext.jsx";
 import { Send } from "lucide-react";
 
 export default function Chat() {
-  const { id } = useParams(); // chatId
-  const chatId = id;
+  const { orderId, receiverId } = useParams();
   const { profile } = useAuth();
-  const { messages, loadMessages, sendMessage, loadingChats } = useChat();
+  const { messages, loadMessages, sendMessage, joinChat, loadingChats } = useChat();
 
+  const [currentChatId, setCurrentChatId] = useState(null);
   const [newMessage, setNewMessage] = useState("");
+  const [sending, setSending] = useState(false);
+
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
-    if (profile) loadMessages(chatId);
-    const interval = setInterval(() => loadMessages(chatId), 3000);
-    return () => clearInterval(interval);
-  }, [profile, chatId, loadMessages]);
+    if (!orderId || !receiverId) return;
+    let cancelled = false;
+
+    const initChat = async () => {
+      const res = await loadMessages(orderId, receiverId);
+      if (!cancelled && res?.chatId) {
+        setCurrentChatId(res.chatId);
+        joinChat(res.chatId);
+      }
+    };
+
+    initChat();
+    return () => (cancelled = true);
+  }, [orderId, receiverId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages[chatId]]);
+  }, [currentChatId, messages]);
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !profile) return;
-
-    // Assuming receiverId is extracted from chatId like "requestId:otherUserId"
-    const [, receiverId] = chatId.split(":");
-
-    await sendMessage(chatId, newMessage.trim(), receiverId);
+    if (!newMessage.trim() || !currentChatId) return;
+    setSending(true);
+    await sendMessage(currentChatId, receiverId, newMessage.trim());
     setNewMessage("");
+    setSending(false);
   };
 
-  const isLoading = loadingChats[chatId];
+  const isLoading = loadingChats[currentChatId];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-5xl mx-auto px-4 py-8">
       {isLoading ? (
         <div className="flex items-center justify-center min-h-96 text-slate-600">
           Loading messages...
@@ -46,26 +55,28 @@ export default function Chat() {
       ) : (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="h-96 overflow-y-auto p-6 space-y-4">
-            {messages[chatId]?.length === 0 ? (
+            {messages[currentChatId]?.length === 0 ? (
               <div className="text-center text-slate-500 py-12">
                 No messages yet. Start the conversation!
               </div>
             ) : (
-              messages[chatId].map((msg) => {
-                const isSender = msg.senderId === profile?.id;
+              messages[currentChatId]?.map((msg) => {
+                const isSender = msg.senderId?._id === profile?._id;
                 return (
                   <div
-                    key={msg.id}
+                    key={msg._id}
                     className={`flex ${isSender ? "justify-end" : "justify-start"}`}
                   >
                     <div
                       className={`max-w-md px-4 py-3 rounded-2xl ${
                         isSender
-                          ? "bg-slate-900 text-white"
+                          ? sending
+                            ? "bg-green-600 animate-pulse text-white"
+                            : "bg-slate-900 text-white"
                           : "bg-slate-100 text-slate-900"
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
                       <div
                         className={`text-xs mt-1 ${
                           isSender ? "text-slate-300" : "text-slate-500"
@@ -91,15 +102,15 @@ export default function Chat() {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type your message..."
-                className="flex-1 px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                className="flex-1 px-4 py-3 border border-slate-300 rounded-xl outline-none"
               />
               <button
                 type="submit"
-                disabled={!newMessage.trim()}
-                className="px-6 py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                disabled={!newMessage.trim() || sending}
+                className="px-6 py-3 bg-slate-900 text-white rounded-xl disabled:opacity-50 flex items-center space-x-2"
               >
-                <Send className="w-4 h-4" />
                 <span>Send</span>
+                <Send className="w-4 h-4" />
               </button>
             </div>
           </form>

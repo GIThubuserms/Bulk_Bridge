@@ -19,6 +19,7 @@ import ConnectPage from "./pages/vendor/ConnectPage.jsx";
 import Chat from "./pages/Chat.jsx";
 import Profile from "./pages/Profile.jsx";
 import VendorBids from "./pages/vendor/VendorBids.jsx";
+import ChatList from "./pages/vendor/ChatList.jsx";
 
 /* ---------------- Protected Layout ---------------- */
 function ProtectedLayout() {
@@ -55,7 +56,7 @@ function App() {
       {/* Protected */}
       <Route path="/app" element={<ProtectedLayout />}>
         <Route path="profile" element={<Profile />} />
-        <Route path="chat" element={<Chat />} />
+        <Route path="chats" element={<ChatList />} />
 
         {/* Purchaser */}
         <Route
@@ -69,7 +70,9 @@ function App() {
           <Route path="dashboard" element={<PurchaserDashboard />} />
           <Route path="create-request" element={<CreateRequest />} />
           <Route path="request/:requestId" element={<RequestDetail />} />
-          <Route path="chat" element={<Chat />} />
+          <Route path="chat/:orderId/:receiverId" element={<Chat />} />
+          <Route path="chats" element={<ChatList />} />
+
 
         </Route>
 
@@ -85,10 +88,13 @@ function App() {
           <Route path="request/:requestId" element={<VendorRequestDetail />} />
           <Route path="my-bids" element={<VendorBids />} />
           <Route path="connects" element={<ConnectPage />} />
+          <Route path="chats" element={<ChatList />} />
+
+
         </Route>
 
         {/* App fallback */}
-        <Route path="*" element={<Navigate to="profile" replace />} />
+        <Route path="*" element={<Navigate to="/app/profile" replace />} />
       </Route>
 
       {/* Global fallback */}

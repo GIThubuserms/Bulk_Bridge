@@ -22,11 +22,13 @@ import { UserRouter } from "./routes/user.route.js";
 import { OrderRouter } from "./routes/order.route.js";
 import Bidrouter from "./routes/bid.route.js";
 import Vendorrouter from "./routes/vendor.route.js";
+import Chatrouter from "./routes/chat.route.js";
 
 app.use("/api/v1/users",UserRouter)
 app.use("/api/v1/orders",OrderRouter)
 app.use("/api/v1/vendor",Vendorrouter)
 app.use("/api/v1/bid",Bidrouter)
+app.use("/api/v1/chat",Chatrouter)
 
 
 export default app
