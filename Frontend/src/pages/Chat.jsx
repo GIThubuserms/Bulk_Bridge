@@ -6,8 +6,9 @@ import { Send } from "lucide-react";
 
 export default function Chat() {
   const { orderId, receiverId } = useParams();
-  const { profile } = useAuth();
-  const { messages, loadMessages, sendMessage, joinChat, loadingChats } = useChat();
+  const { user } = useAuth();
+  const { messages, loadMessages, sendMessage, joinChat, loadingChats } =
+    useChat();
 
   const [currentChatId, setCurrentChatId] = useState(null);
   const [newMessage, setNewMessage] = useState("");
@@ -17,18 +18,14 @@ export default function Chat() {
 
   useEffect(() => {
     if (!orderId || !receiverId) return;
-    let cancelled = false;
 
     const initChat = async () => {
-      const res = await loadMessages(orderId, receiverId);
-      if (!cancelled && res?.chatId) {
-        setCurrentChatId(res.chatId);
-        joinChat(res.chatId);
-      }
+      const chatId = await loadMessages(orderId, receiverId);
+      if (chatId) joinChat(chatId); // AFTER messages are loaded
+      setCurrentChatId(chatId);
     };
 
     initChat();
-    return () => (cancelled = true);
   }, [orderId, receiverId]);
 
   useEffect(() => {
@@ -39,7 +36,7 @@ export default function Chat() {
     e.preventDefault();
     if (!newMessage.trim() || !currentChatId) return;
     setSending(true);
-    await sendMessage(currentChatId, receiverId, newMessage.trim());
+    await sendMessage(orderId, currentChatId, receiverId, newMessage.trim());
     setNewMessage("");
     setSending(false);
   };
@@ -61,7 +58,18 @@ export default function Chat() {
               </div>
             ) : (
               messages[currentChatId]?.map((msg) => {
-                const isSender = msg.senderId?._id === profile?._id;
+                const messageSenderId =
+                  typeof msg.senderId === "object"
+                    ? msg.senderId._id
+                    : msg.senderId;
+
+                const currentUserId = user?._id;
+
+                console.log("MSG sender:", messageSenderId);
+                console.log("Current user:", currentUserId);
+                const isSender =
+                  messageSenderId?.toString() === currentUserId?.toString();
+
                 return (
                   <div
                     key={msg._id}
@@ -76,7 +84,9 @@ export default function Chat() {
                           : "bg-slate-100 text-slate-900"
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                      <p className="text-sm whitespace-pre-wrap">
+                        {msg.message}
+                      </p>
                       <div
                         className={`text-xs mt-1 ${
                           isSender ? "text-slate-300" : "text-slate-500"

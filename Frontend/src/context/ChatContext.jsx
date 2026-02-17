@@ -18,17 +18,21 @@ export const ChatProvider = ({ children }) => {
 
   useEffect(() => {
     if (!user) return;
-    socketRef.current = io(BASE_URL);
+
+    socketRef.current = io(BASE_URL, {
+      withCredentials: true,
+    });
 
     socketRef.current.on("receive_message", (newMessage) => {
       const chatId = newMessage.chatId;
+
       setMessages((prev) => ({
         ...prev,
         [chatId]: [...(prev[chatId] || []), newMessage],
       }));
     });
 
-    return () => socketRef.current.disconnect();
+    return () => socketRef.current?.disconnect();
   }, [user]);
 
   const loadMessages = async (orderId, receiverId) => {
@@ -36,36 +40,25 @@ export const ChatProvider = ({ children }) => {
     setLoadingChats((prev) => ({ ...prev, [orderId]: true }));
 
     try {
-      let res = await fetch(`${BASE_URL}/api/v1/chat/${orderId}/${receiverId}/messages`, {
-        credentials: "include",
-      });
-
-      if (res.status === 404) {
-        const createRes = await fetch(`${BASE_URL}/api/v1/chat/send`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+      let res = await fetch(
+        `${BASE_URL}/api/v1/chat/${orderId}/${receiverId}/messages`,
+        {
           credentials: "include",
-          body: JSON.stringify({
-            orderId,
-            receiverId,
-            message: "Chat initialized",
-          }),
-        });
-
-        await createRes.json();
-
-        res = await fetch(`${BASE_URL}/api/v1/chat/${orderId}/messages`, {
-          credentials: "include",
-        });
-      }
+        },
+      );
 
       const data = await res.json();
-      setMessages((prev) => ({
-        ...prev,
-        [orderId]: data.messages || [],
-      }));
+      const chatId = data.chatId;
 
-      return { chatId: orderId };
+      console.log("Chat Id from loading messages : ", chatId);
+      if (chatId) {
+        setMessages((prev) => ({
+          ...prev,
+          [chatId]: data.messages || [],
+        }));
+      }
+
+      return chatId;
     } catch (err) {
       console.error("loadMessages error:", err);
       return null;
@@ -74,26 +67,24 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  const sendMessage = async (chatId, receiverId, message) => {
+  const sendMessage = async (orderId, chatId, receiverId, message) => {
     try {
       const res = await fetch(`${BASE_URL}/api/v1/chat/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ orderId: chatId, receiverId, message }),
+        body: JSON.stringify({ orderId, receiverId, message }),
       });
 
       const data = await res.json();
+
+      console.log("DATA RECIVED FROM SEND MESSAGE: ", data.message);
 
       if (socketRef.current && data.message) {
         socketRef.current.emit("send_message", data.message);
       }
 
-      // Local update
-      setMessages((prev) => ({
-        ...prev,
-        [chatId]: [...(prev[chatId] || []), data.message],
-      }));
+
 
       return data.message;
     } catch (err) {
@@ -118,13 +109,17 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
+  const joinChat = (chatId) => {
+    socketRef.current?.emit("join_chat", chatId);
+  };
+
   return (
     <ChatContext.Provider
       value={{
         messages,
         loadMessages,
         sendMessage,
-        joinChat: (chatId) => socketRef.current?.emit("join_chat", chatId),
+        joinChat,
         loadingChats,
         chatList,
         loadChatList,

@@ -68,8 +68,6 @@ export const Login = asynchandler(async (req, res) => {
     user._id,
   );
 
-  console.log("AccessToken : ", accessToken);
-  console.log("RefreshToken : ", refreshToken);
 
   const options = {
     httpOnly: true,

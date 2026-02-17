@@ -15,7 +15,8 @@ const PORT = 4000;
 const server = http.createServer(app);
 export const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: "http://localhost:5173",
+    credentials:true,
   },
 });
 
@@ -40,7 +41,7 @@ app.get("/", (req, res) => {
 
 DBconnection()
   .then(() => {
-    server.listen(PORT, () => {
+    server.listen(PORT,'0.0.0.0',() => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
     console.log("✅ Database connected successfully");

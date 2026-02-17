@@ -6,7 +6,7 @@ export default async function DBconnection(){
         console.log("MongoDB URI "+process.env.MONGODB_URI)
         await mongoose.connect(`${process.env.MONGODB_URI}/${MONGODB_NAME}`)
     } catch (error) {
-        console.log("Error while connecting to DB")
+        console.log("Error while connecting to DB",error)
         process.exit(1)
     }
 }

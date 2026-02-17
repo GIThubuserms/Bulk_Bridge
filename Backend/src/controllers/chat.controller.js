@@ -13,30 +13,18 @@ export const sendMessage = async (req, res) => {
       });
     }
 
-    /* =============================
-       FIND EXISTING CHAT
-    ============================== */
-
     let chat = await Chat.findOne({
       orderId,
-      senderId,
-      receiverId,
+      $or: [
+        { senderId, receiverId },
+        { senderId: receiverId, receiverId: senderId },
+      ],
     });
 
-    if (!chat) {
-      // Check the reverse too, in case roles swap
-      chat = await Chat.findOne({
-        orderId,
-        senderId: receiverId,
-        receiverId: senderId,
-      });
-    }
-
-    /* =============================
-       CREATE CHAT IF NOT EXISTS
-    ============================== */
+    console.log("Chat query done ....");
 
     if (!chat) {
+      console.log("Creating chat ....");
       chat = await Chat.create({
         orderId,
         senderId: senderId,
@@ -44,21 +32,18 @@ export const sendMessage = async (req, res) => {
       });
     }
 
-    /* =============================
-       CREATE MESSAGE
-    ============================== */
-
     const newMessage = await Message.create({
       chatId: chat._id,
       senderId: senderId,
       message,
     });
 
-    /* =============================
-       EMIT SOCKET EVENT
-    ============================== */
+    console.log("New message formed ....", newMessage);
 
-    io.to(`chat_${chat._id}`).emit("receive_message", newMessage);
+    io.to(`chat_${chat._id}`).emit("receive_message", {
+      ...newMessage.toObject(),
+      chatId: chat._id,
+    });
 
     return res.status(200).json({
       success: true,
@@ -78,7 +63,7 @@ export const getChatMessages = async (req, res) => {
     const userId = req.user._id;
     const { orderId, receiverId } = req.params;
 
-    const chat = await Chat.findOne({
+    let chat = await Chat.findOne({
       orderId,
       $or: [
         { senderId: userId, receiverId },
@@ -87,8 +72,12 @@ export const getChatMessages = async (req, res) => {
     });
 
     if (!chat) {
-      return res.status(404).json({
-        message: "Chat not found",
+      console.log("Creating chat...");
+
+      chat = await Chat.create({
+        orderId,
+        senderId: userId, // logged-in user
+        receiverId: receiverId,
       });
     }
 

@@ -15,7 +15,6 @@ export const verifyUser = asynchandler(async (req, res, next) => {
 
   const decodedToken =await jwt.verify(token, process.env.ACCESS_TOKEN);
 
-console.log("DecodedToken: ",decodedToken)
   
   if (!decodedToken) {
     throw new ApiError(402, "User is Not Authorized !!");
